@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AsyncApiServiceBus", "AsyncApiServiceBus\AsyncApiServiceBus.fsproj", "{7EC35CC4-4256-46AA-B33B-2F84E96030F7}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AsyncApiServiceBusTests", "AsyncApiServiceBusTests\AsyncApiServiceBusTests.fsproj", "{061FDEC2-B34A-4BAA-91C8-5EC638BEF1F2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7EC35CC4-4256-46AA-B33B-2F84E96030F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EC35CC4-4256-46AA-B33B-2F84E96030F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EC35CC4-4256-46AA-B33B-2F84E96030F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EC35CC4-4256-46AA-B33B-2F84E96030F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{061FDEC2-B34A-4BAA-91C8-5EC638BEF1F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{061FDEC2-B34A-4BAA-91C8-5EC638BEF1F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{061FDEC2-B34A-4BAA-91C8-5EC638BEF1F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{061FDEC2-B34A-4BAA-91C8-5EC638BEF1F2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
