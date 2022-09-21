@@ -3,6 +3,8 @@
 open System
 open System.Collections.Generic
 open YamlDotNet.Serialization
+open Farmer
+open Farmer.Builders
 
 module Model =
     [<AllowNullLiteral>]
@@ -51,6 +53,9 @@ module Model =
         member val Protocol : string = null with get, set
         member val ProtocolVersion : string = null with get, set
         member val Description : string = null with get, set
+        /// Schema extension for Azure Service Bus SKU
+        [<YamlMember(Alias="x-azure-service-bus-sku")>]
+        member val Sku : string = null with get, set
 
     [<AllowNullLiteral>]
     type AsyncApiOperation () =
@@ -94,3 +99,26 @@ module Model =
         member val Components : AsyncApiComponents = null with get, set
         static member Deserialize (yaml:string) : AsyncApiDocument =
             deserializer.Deserialize<AsyncApiDocument>(yaml)
+        member this.ArmTemplate (loc:string) =
+            let sb =
+                serviceBus {
+                    name (this.Servers |> Seq.head |> fun server -> server.Key)
+                    sku (
+                        this.Servers
+                        |> Seq.head
+                        |> fun server ->
+                            match server.Value.Sku with
+                            | sku when String.IsNullOrWhiteSpace sku -> ServiceBus.Sku.Basic
+                            | sku when sku.Equals("basic", StringComparison.OrdinalIgnoreCase) -> ServiceBus.Sku.Basic
+                            | sku when sku.Equals("standard", StringComparison.OrdinalIgnoreCase) -> ServiceBus.Sku.Standard
+                            | sku when sku.Equals("premium", StringComparison.OrdinalIgnoreCase) -> ServiceBus.Sku.Premium ServiceBus.MessagingUnits.OneUnit
+                            | _ -> ServiceBus.Sku.Basic
+                        )
+                }
+            let deployment = arm {
+                location (Location.Location loc)
+                add_resources [
+                    sb
+                ]
+            }
+            deployment.Template |> Writer.toJson

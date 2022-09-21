@@ -4,12 +4,13 @@
     <TargetFramework>net6.0</TargetFramework>
 
     <IsPackable>false</IsPackable>
-    <GenerateProgramFile>false</GenerateProgramFile>
+    <GenerateProgramFile>true</GenerateProgramFile>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="AsyncApiModelTests.fs" />
-    <Compile Include="Program.fs" />
+    <!--Compile Include="Program.fs" /-->
+    <Compile Include="ServiceBusDeploymentTests.fs" />
   </ItemGroup>
   
   <ItemGroup>
