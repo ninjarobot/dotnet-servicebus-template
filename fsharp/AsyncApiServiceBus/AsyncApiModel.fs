@@ -80,6 +80,11 @@ module Model =
 
     [<AllowNullLiteral>]
     type AsyncApiDocument () =
+        static let deserializer =
+            DeserializerBuilder()
+                .WithNamingConvention(NamingConventions.CamelCaseNamingConvention.Instance)
+                .IgnoreUnmatchedProperties()
+                .Build()
         [<YamlMember(Alias="asyncapi")>]
         member val AsyncApi : string = null with get, set
         member val Id : string = null with get, set
@@ -87,3 +92,5 @@ module Model =
         member val Servers : Dictionary<string,AsyncApiServer> = null with get, set
         member val Channels : Dictionary<string,AsyncApiChannel> = null with get, set
         member val Components : AsyncApiComponents = null with get, set
+        static member Deserialize (yaml:string) : AsyncApiDocument =
+            deserializer.Deserialize<AsyncApiDocument>(yaml)
