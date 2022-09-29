@@ -58,13 +58,22 @@ module Model =
         member val Sku : string = null with get, set
 
     [<AllowNullLiteral>]
+    type Amqp1ChannelBinding () =
+        [<YamlMember(Alias="x-azure-service-bus-headers")>]
+        member val Headers : Dictionary<string,string> = null with get, set
+
+    [<AllowNullLiteral>]
+    type AsyncApiChannelBinding () =
+        member val Amqp1 : Amqp1ChannelBinding = null with get, set 
+
+    [<AllowNullLiteral>]
     type AsyncApiOperation () =
         [<YamlMember(Alias="$ref")>]
         member val Ref : string = null with get, set
         member val OperationId : string = null with get, set
         member val Summary : string = null with get, set
         member val Description : string = null with get, set
-        //member val Bindings : string = null with get, set
+        member val Bindings : AsyncApiChannelBinding = null with get, set
         member val Message : AsyncApiMessage = null with get, set
 
     [<AllowNullLiteral>]
@@ -100,6 +109,31 @@ module Model =
         static member Deserialize (yaml:string) : AsyncApiDocument =
             deserializer.Deserialize<AsyncApiDocument>(yaml)
         member this.ArmTemplate (loc:string) =
+            let queues = ResizeArray<ServiceBusQueueConfig>()
+            let topicSubs = Dictionary<string,ServiceBusTopicConfig>()
+            if not <| isNull this.Channels then
+                for channelIdentifier in this.Channels do
+                    match channelIdentifier.Key.Split("/", 2) with
+                    | [|queueName|] -> queue { name queueName } |> queues.Add
+                    | [|topicName;subscriptionName|] ->
+                        if topicSubs.ContainsKey topicName then
+                            let topicConfig = topicSubs.[topicName]
+                            topicSubs.[topicName] <-
+                                { topicConfig with Subscriptions = (topicConfig.Subscriptions |> Map.add (ResourceName subscriptionName) (subscription { name subscriptionName })) }
+                        else
+                            topicSubs.Add (topicName,
+                                (
+                                    topic {
+                                        name topicName
+                                        add_subscriptions [
+                                            subscription {
+                                                name subscriptionName
+                                            }
+                                        ]
+                                    }
+                                )
+                            )
+                    | _ -> ()
             let sb =
                 serviceBus {
                     name (this.Servers |> Seq.head |> fun server -> server.Key)
@@ -114,6 +148,8 @@ module Model =
                             | sku when sku.Equals("premium", StringComparison.OrdinalIgnoreCase) -> ServiceBus.Sku.Premium ServiceBus.MessagingUnits.OneUnit
                             | _ -> ServiceBus.Sku.Basic
                         )
+                    add_queues (queues |> List.ofSeq)
+                    add_topics (topicSubs.Values |> List.ofSeq)
                 }
             let deployment = arm {
                 location (Location.Location loc)
