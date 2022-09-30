@@ -73,7 +73,7 @@ module Model =
         member val OperationId : string = null with get, set
         member val Summary : string = null with get, set
         member val Description : string = null with get, set
-        member val Bindings : AsyncApiChannelBinding = null with get, set
+        member val Bindings : ResizeArray<AsyncApiChannelBinding> = null with get, set
         member val Message : AsyncApiMessage = null with get, set
 
     [<AllowNullLiteral>]
@@ -112,24 +112,48 @@ module Model =
             let queues = ResizeArray<ServiceBusQueueConfig>()
             let topicSubs = Dictionary<string,ServiceBusTopicConfig>()
             if not <| isNull this.Channels then
-                for channelIdentifier in this.Channels do
-                    match channelIdentifier.Key.Split("/", 2) with
+                for channel in this.Channels do
+                    match channel.Key.Split("/", 2) with
                     | [|queueName|] -> queue { name queueName } |> queues.Add
                     | [|topicName;subscriptionName|] ->
+                        let filters = ResizeArray()
+                        let subscriptionConfig =
+                            match channel.Value.Subscribe |> Option.ofObj with
+                            | None ->
+                                subscription {
+                                    name subscriptionName
+                                }
+                            | Some operation ->
+                                match operation.Bindings |> Option.ofObj with
+                                | None ->
+                                    subscription {
+                                        name subscriptionName
+                                    }
+                                | Some channelBindings ->
+                                    // Build a correlation filter from header bindings
+                                    for binding in channelBindings |> Seq.where(fun b -> not <| isNull b.Amqp1 && not <| isNull b.Amqp1.Headers) do
+                                        let generatedName =
+                                            seq {
+                                                yield "on"
+                                                for k in binding.Amqp1.Headers.Keys do
+                                                    yield k
+                                                    yield binding.Amqp1.Headers[k]
+                                            } |> String.concat "-"
+                                        filters.Add (ServiceBus.Rule.CorrelationFilter(ResourceName generatedName, None, (binding.Amqp1.Headers |> Seq.map (|KeyValue|) |> Map.ofSeq)))
+                                    subscription {
+                                        name subscriptionName
+                                        add_filters (List.ofSeq filters)
+                                    }
                         if topicSubs.ContainsKey topicName then
                             let topicConfig = topicSubs.[topicName]
                             topicSubs.[topicName] <-
-                                { topicConfig with Subscriptions = (topicConfig.Subscriptions |> Map.add (ResourceName subscriptionName) (subscription { name subscriptionName })) }
+                                { topicConfig with Subscriptions = (topicConfig.Subscriptions |> Map.add (ResourceName subscriptionName) subscriptionConfig) }
                         else
                             topicSubs.Add (topicName,
                                 (
                                     topic {
                                         name topicName
-                                        add_subscriptions [
-                                            subscription {
-                                                name subscriptionName
-                                            }
-                                        ]
+                                        add_subscriptions [ subscriptionConfig ]
                                     }
                                 )
                             )
