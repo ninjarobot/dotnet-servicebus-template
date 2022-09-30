@@ -54,12 +54,12 @@ module Model =
         member val ProtocolVersion : string = null with get, set
         member val Description : string = null with get, set
         /// Schema extension for Azure Service Bus SKU
-        [<YamlMember(Alias="x-azure-service-bus-sku")>]
+        [<YamlMember(Alias="x-azure-service-bus-sku", ApplyNamingConventions=false)>]
         member val Sku : string = null with get, set
 
     [<AllowNullLiteral>]
     type Amqp1ChannelBinding () =
-        [<YamlMember(Alias="x-azure-service-bus-headers")>]
+        [<YamlMember(Alias="x-azure-service-bus-headers", ApplyNamingConventions=false)>]
         member val Headers : Dictionary<string,string> = null with get, set
 
     [<AllowNullLiteral>]
@@ -73,7 +73,6 @@ module Model =
         member val OperationId : string = null with get, set
         member val Summary : string = null with get, set
         member val Description : string = null with get, set
-        member val Bindings : ResizeArray<AsyncApiChannelBinding> = null with get, set
         member val Message : AsyncApiMessage = null with get, set
 
     [<AllowNullLiteral>]
@@ -84,6 +83,7 @@ module Model =
         member val Servers : ResizeArray<string> = null with get, set
         member val Subscribe : AsyncApiOperation = null with get, set
         member val Publish : AsyncApiOperation = null with get, set
+        member val Bindings : AsyncApiChannelBinding = null with get, set
 
     [<AllowNullLiteral>]
     type AsyncApiComponents () =
@@ -124,22 +124,22 @@ module Model =
                                     name subscriptionName
                                 }
                             | Some operation ->
-                                match operation.Bindings |> Option.ofObj with
+                                match channel.Value.Bindings |> Option.ofObj with
                                 | None ->
                                     subscription {
                                         name subscriptionName
                                     }
                                 | Some channelBindings ->
                                     // Build a correlation filter from header bindings
-                                    for binding in channelBindings |> Seq.where(fun b -> not <| isNull b.Amqp1 && not <| isNull b.Amqp1.Headers) do
+                                    if  not <| isNull channelBindings.Amqp1 && not <| isNull channelBindings.Amqp1.Headers then
                                         let generatedName =
                                             seq {
                                                 yield "on"
-                                                for k in binding.Amqp1.Headers.Keys do
+                                                for k in channelBindings.Amqp1.Headers.Keys do
                                                     yield k
-                                                    yield binding.Amqp1.Headers[k]
+                                                    yield channelBindings.Amqp1.Headers[k]
                                             } |> String.concat "-"
-                                        filters.Add (ServiceBus.Rule.CorrelationFilter(ResourceName generatedName, None, (binding.Amqp1.Headers |> Seq.map (|KeyValue|) |> Map.ofSeq)))
+                                        filters.Add (ServiceBus.Rule.CorrelationFilter(ResourceName generatedName, None, (channelBindings.Amqp1.Headers |> Seq.map (|KeyValue|) |> Map.ofSeq)))
                                     subscription {
                                         name subscriptionName
                                         add_filters (List.ofSeq filters)
@@ -160,7 +160,7 @@ module Model =
                     | _ -> ()
             let sb =
                 serviceBus {
-                    name (this.Servers |> Seq.head |> fun server -> server.Key)
+                    name (this.Servers |> Seq.head |> fun server -> server.Value.Url.Split "." |> Array.head)
                     sku (
                         this.Servers
                         |> Seq.head

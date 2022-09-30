@@ -1,0 +1,24 @@
+asyncapi: '2.4.0'
+info:
+  title: End to end Service Bus Example
+  version: '1.0.0'
+  description: Example to show generation of service bus features.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  dev:
+    url: my-test-sbus.servicebus.windows.core
+    protocol: amqp1
+    x-azure-service-bus-sku: standard
+
+channels:
+  topic1/sub1:
+    subscribe:
+      operationId: topic1sub1
+    bindings:
+      amqp1:
+        x-azure-service-bus-headers:
+          operation: reset
+          operationresource: host

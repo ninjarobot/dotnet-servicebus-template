@@ -240,35 +240,29 @@ let ``Generate service bus namespace with header subscriptions`` () =
       Channels = (
         [
           "topic1/t1-sub0", AsyncApiChannel(
-            Subscribe = AsyncApiOperation (
-              Bindings = ([
-                AsyncApiChannelBinding(
-                  Amqp1 = Amqp1ChannelBinding(
-                    Headers = (
-                        [
-                          "operation", "reset"
-                          "operationresource", "host"
-                        ] |> dict |> Dictionary
-                      )
-                    )
+            Subscribe = AsyncApiOperation (),
+            Bindings = AsyncApiChannelBinding(
+              Amqp1 = Amqp1ChannelBinding(
+                Headers = (
+                    [
+                      "operation", "reset"
+                      "operationresource", "host"
+                    ] |> dict |> Dictionary
                   )
-                ] |> ResizeArray)
+                )
               )
             )
           "topic2/t2-sub1", AsyncApiChannel(
-            Subscribe = AsyncApiOperation (
-              Bindings = ([
-                AsyncApiChannelBinding(
-                  Amqp1 = Amqp1ChannelBinding(
-                    Headers = (
-                        [
-                          "operation", "poweroff"
-                          "operationresource", "host"
-                        ] |> dict |> Dictionary
-                      )
-                    )
+            Subscribe = AsyncApiOperation (),
+            Bindings = AsyncApiChannelBinding(
+              Amqp1 = Amqp1ChannelBinding(
+                Headers = (
+                    [
+                      "operation", "poweroff"
+                      "operationresource", "host"
+                    ] |> dict |> Dictionary
                   )
-                ] |> ResizeArray)
+                )
               )
             )
         ] |> dict |> Dictionary)

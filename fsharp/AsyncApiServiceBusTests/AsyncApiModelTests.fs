@@ -5,9 +5,10 @@ open AsyncApiServiceBus.AsyncApi.Model
 open Xunit
 
 let StreetlightsOperationSecurity = IO.File.ReadAllText "sample-specs/streetlights-operation-security.yml"
+let SbEndToEnd = IO.File.ReadAllText "sample-specs/sb-end-to-end.yml"
 
 [<Fact>]
-let ``Deserialize spec`` () =
+let ``Deserialize asyncapi sample spec`` () =
     let asyncApiDoc = AsyncApiDocument.Deserialize(StreetlightsOperationSecurity)
     // Info
     Assert.Equal("Apache 2.0", asyncApiDoc.Info.License.Name)
@@ -35,3 +36,68 @@ let ``Deserialize spec`` () =
     Assert.Contains("Light measured", asyncApiDoc.Components.Messages["lightMeasured"].Title)
     Assert.Contains("Inform about environmental lighting conditions of a particular streetlight.", asyncApiDoc.Components.Messages["lightMeasured"].Summary)
     Assert.Contains("application/json", asyncApiDoc.Components.Messages["lightMeasured"].ContentType)
+
+let sampleEndToEndTemplate = """{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "outputs": {},
+  "parameters": {},
+  "resources": [
+    {
+      "apiVersion": "2017-04-01",
+      "dependsOn": [],
+      "location": "eastus",
+      "name": "my-test-sbus",
+      "sku": {
+        "name": "Standard",
+        "tier": "Standard"
+      },
+      "tags": {},
+      "type": "Microsoft.ServiceBus/namespaces"
+    },
+    {
+      "apiVersion": "2017-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', 'my-test-sbus')]"
+      ],
+      "name": "my-test-sbus/topic1",
+      "properties": {},
+      "type": "Microsoft.ServiceBus/namespaces/topics"
+    },
+    {
+      "apiVersion": "2017-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', 'my-test-sbus', 'topic1')]"
+      ],
+      "name": "my-test-sbus/topic1/sub1",
+      "properties": {},
+      "resources": [
+        {
+          "apiVersion": "2017-04-01",
+          "dependsOn": [
+            "sub1"
+          ],
+          "name": "on-operation-reset-operationresource-host",
+          "properties": {
+            "correlationFilter": {
+              "properties": {
+                "operation": "reset",
+                "operationresource": "host"
+              }
+            },
+            "filterType": "CorrelationFilter"
+          },
+          "type": "Rules"
+        }
+      ],
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions"
+    }
+  ]
+}"""
+
+[<Fact>]
+let ``Deserialize end to end sample`` () =
+    let asyncApiDoc = AsyncApiDocument.Deserialize(SbEndToEnd)
+    let template = asyncApiDoc.ArmTemplate "eastus"
+    Assert.Equal(sampleEndToEndTemplate.ReplaceLineEndings(), template)
+    ()
