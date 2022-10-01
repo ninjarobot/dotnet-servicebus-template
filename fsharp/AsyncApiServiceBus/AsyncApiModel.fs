@@ -29,13 +29,13 @@ module Model =
 
     [<AllowNullLiteral>]
     type AsyncApiSchema () =
-        [<YamlMember(Alias="$ref")>]
+        [<YamlMember(Alias="$ref", ApplyNamingConventions=false)>]
         member val Ref : string = null with get, set
         member val Type : string = null with get, set
 
     [<AllowNullLiteral>]
     type AsyncApiMessage () =
-        [<YamlMember(Alias="$ref")>]
+        [<YamlMember(Alias="$ref", ApplyNamingConventions=false)>]
         member val Ref : string = null with get, set
         member val MessageId : string = null with get, set
         member val Headers : AsyncApiSchema = null with get, set
@@ -47,7 +47,7 @@ module Model =
 
     [<AllowNullLiteral>]
     type AsyncApiServer () =
-        [<YamlMember(Alias="$ref")>]
+        [<YamlMember(Alias="$ref", ApplyNamingConventions=false)>]
         member val Ref : string = null with get, set
         member val Url : string = null with get, set
         member val Protocol : string = null with get, set
@@ -68,7 +68,7 @@ module Model =
 
     [<AllowNullLiteral>]
     type AsyncApiOperation () =
-        [<YamlMember(Alias="$ref")>]
+        [<YamlMember(Alias="$ref", ApplyNamingConventions=false)>]
         member val Ref : string = null with get, set
         member val OperationId : string = null with get, set
         member val Summary : string = null with get, set
