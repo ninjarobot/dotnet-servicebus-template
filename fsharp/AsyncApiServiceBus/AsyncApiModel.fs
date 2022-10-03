@@ -138,7 +138,7 @@ module Model =
                                                 for k in channelBindings.Amqp1.Headers.Keys do
                                                     yield k
                                                     yield channelBindings.Amqp1.Headers[k]
-                                            } |> String.concat "-"
+                                            } |> String.concat "-" |> Seq.truncate 50 |> String.Concat
                                         filters.Add (ServiceBus.Rule.CorrelationFilter(ResourceName generatedName, None, (channelBindings.Amqp1.Headers |> Seq.map (|KeyValue|) |> Map.ofSeq)))
                                     subscription {
                                         name subscriptionName
