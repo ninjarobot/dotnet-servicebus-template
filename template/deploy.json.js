@@ -1,11 +1,9 @@
-import { File, Text, Indent, IndentationTypes } from '@asyncapi/generator-react-sdk';
-import { Template } from '../components/Template'
-import { Namespace } from '../components/Namespace'
+import { File } from '@asyncapi/generator-react-sdk';
+import { ArmTemplate } from '../components/ArmTemplate'
 
-export default function ({ asyncapi }) {
+export default function ({ asyncapi, params }) {
     return <File name={'deploy.json'}>
-        <Template asyncapi={asyncapi}>
-            <Namespace server={asyncapi.servers.name}/>
-        </Template>
+        <ArmTemplate asyncapi={asyncapi} location={params.location}>
+        </ArmTemplate>
     </File>;
 }

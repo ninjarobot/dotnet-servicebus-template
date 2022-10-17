@@ -11,7 +11,7 @@ servers:
   dev:
     url: my-test-sbus.servicebus.windows.core
     protocol: amqp1
-    x-azure-service-bus-sku: standard
+    x-azure-service-bus-sku: Standard
 
 channels:
   topic1/sub1:
