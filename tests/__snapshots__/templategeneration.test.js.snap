@@ -1,0 +1,37 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Template generation Generate deployment template from sb-end-to-end spec 1`] = `
+"{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "comment": "End to end Service Bus Example",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+        {
+            "type": "Microsoft.ServiceBus/namespaces",
+            "apiVersion": "2017-04-01",
+            "location": "eastus",
+            "name": "my-test-sbus",
+            "sku": {
+                "name": "Standard",
+                "tier": "Standard"
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics",
+            "apiVersion": "2017-04-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', 'my-test-sbus')]"
+            ],
+            "name": "my-test-sbus/topic1"
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+            "apiVersion": "2017-04-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', 'my-test-sbus', 'topic1')]"
+            ],
+            "name": "my-test-sbus/topic1/sub1"
+        }
+    ]
+}"
+`;
