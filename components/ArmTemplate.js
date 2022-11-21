@@ -32,16 +32,39 @@ function getResources(asyncapi, location, server) {
             name: `${nsName}/${topicName}`
         })
     );
-    Object.entries(asyncapi.channels()).forEach((channel) => {
-            let topic = channel[0].split('/')[0];
-            resources.push({
-                type: "Microsoft.ServiceBus/namespaces/topics/subscriptions",
-                apiVersion: "2017-04-01",
-                dependsOn: [
-                    `[resourceId('Microsoft.ServiceBus/namespaces/topics', '${nsName}', '${topic}')]`
-                ],
-                name: `${nsName}/${channel[0]}`
-            });
+    Object.entries(asyncapi.channels()).forEach(([topicSubName, channel]) => {
+        let [topic, sub] = topicSubName.split('/',2);
+            let operationId = channel.subscribe().id();
+            if(channel.hasBinding('amqp1')) {
+                let amqp1 = channel.binding('amqp1');
+                resources.push({
+                    type: "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+                    apiVersion: "2017-04-01",
+                    dependsOn: [
+                        `[resourceId('Microsoft.ServiceBus/namespaces/topics', '${nsName}', '${topic}')]`
+                    ],
+                    name: `${nsName}/${topicSubName}`,
+                    properties: {
+                        operationId: operationId
+                    },
+                    resources: [
+                        {
+                            apiVersion: "2017-04-01",
+                            dependsOn: [
+                                sub
+                            ],
+                            name: `on-${operationId}`,
+                            properties: {
+                                correlationFilter: {
+                                    properties: amqp1['x-azure-service-bus-headers']
+                                },
+                                filterType: "CorrelationFilter"
+                            },
+                            type: "Rules"
+                        }
+                    ]
+                })
+            }
         }
     )
     return resources;
@@ -50,7 +73,9 @@ function getResources(asyncapi, location, server) {
 export function ArmTemplate({asyncapi, location}) {
     let template = {
         $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-        comment: asyncapi.info().title(),
+        metadata: {
+            description: asyncapi.info().title()
+        },
         contentVersion: "1.0.0.0",
         resources: getResources(asyncapi, location, asyncapi.servers()["dev"])
     }

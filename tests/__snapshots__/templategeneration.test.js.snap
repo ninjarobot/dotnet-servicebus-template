@@ -3,7 +3,9 @@
 exports[`Template generation Generate deployment template from sb-end-to-end spec 1`] = `
 "{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "comment": "End to end Service Bus Example",
+    "metadata": {
+        "description": "End to end Service Bus Example"
+    },
     "contentVersion": "1.0.0.0",
     "resources": [
         {
@@ -30,7 +32,29 @@ exports[`Template generation Generate deployment template from sb-end-to-end spe
             "dependsOn": [
                 "[resourceId('Microsoft.ServiceBus/namespaces/topics', 'my-test-sbus', 'topic1')]"
             ],
-            "name": "my-test-sbus/topic1/sub1"
+            "name": "my-test-sbus/topic1/sub1",
+            "properties": {
+                "operationId": "topic1sub1"
+            },
+            "resources": [
+                {
+                    "apiVersion": "2017-04-01",
+                    "dependsOn": [
+                        "sub1"
+                    ],
+                    "name": "on-topic1sub1",
+                    "properties": {
+                        "correlationFilter": {
+                            "properties": {
+                                "operation": "reset",
+                                "operationresource": "host"
+                            }
+                        },
+                        "filterType": "CorrelationFilter"
+                    },
+                    "type": "Rules"
+                }
+            ]
         }
     ]
 }"
