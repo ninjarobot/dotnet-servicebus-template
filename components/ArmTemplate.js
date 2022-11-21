@@ -33,37 +33,39 @@ function getResources(asyncapi, location, server) {
         })
     );
     Object.entries(asyncapi.channels()).forEach(([topicSubName, channel]) => {
-        let [topic, sub] = topicSubName.split('/',2);
-            let operationId = channel.subscribe().id();
-            if(channel.hasBinding('amqp1')) {
-                let amqp1 = channel.binding('amqp1');
-                resources.push({
-                    type: "Microsoft.ServiceBus/namespaces/topics/subscriptions",
-                    apiVersion: "2017-04-01",
-                    dependsOn: [
-                        `[resourceId('Microsoft.ServiceBus/namespaces/topics', '${nsName}', '${topic}')]`
-                    ],
-                    name: `${nsName}/${topicSubName}`,
-                    properties: {
-                        operationId: operationId
-                    },
-                    resources: [
-                        {
-                            apiVersion: "2017-04-01",
-                            dependsOn: [
-                                sub
-                            ],
-                            name: `on-${operationId}`,
-                            properties: {
-                                correlationFilter: {
-                                    properties: amqp1['x-azure-service-bus-headers']
+            let [topic, sub] = topicSubName.split('/', 2);
+            if (channel.hasSubscribe()) {
+                let operationId = channel.subscribe().id();
+                if (channel.hasBinding('amqp1')) {
+                    let amqp1 = channel.binding('amqp1');
+                    resources.push({
+                        type: "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+                        apiVersion: "2017-04-01",
+                        dependsOn: [
+                            `[resourceId('Microsoft.ServiceBus/namespaces/topics', '${nsName}', '${topic}')]`
+                        ],
+                        name: `${nsName}/${topicSubName}`,
+                        properties: {
+                            operationId: operationId
+                        },
+                        resources: [
+                            {
+                                apiVersion: "2017-04-01",
+                                dependsOn: [
+                                    sub
+                                ],
+                                name: `on-${operationId}`,
+                                properties: {
+                                    correlationFilter: {
+                                        properties: amqp1['x-azure-service-bus-headers']
+                                    },
+                                    filterType: "CorrelationFilter"
                                 },
-                                filterType: "CorrelationFilter"
-                            },
-                            type: "Rules"
-                        }
-                    ]
-                })
+                                type: "Rules"
+                            }
+                        ]
+                    })
+                }
             }
         }
     )
