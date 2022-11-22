@@ -1,7 +1,7 @@
 {
   "name": "@asyncapi/azure-servicebus-template",
   "description": "AsyncAPI generator for service bus topologies",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "generator": {
     "renderer": "react",
     "parameters": {
@@ -22,7 +22,7 @@
     "clean": "del-cli --force output"
   },
   "author": "Dave Curylo",
-  "license": "MIT",
+  "license": "APACHE-2.0",
   "devDependencies": {
     "@asyncapi/parser": "^1.17.1",
     "@babel/preset-env": "^7.19.4",
