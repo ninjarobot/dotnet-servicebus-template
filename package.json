@@ -1,5 +1,5 @@
 {
-  "name": "@asyncapi/azure-servicebus-template",
+  "name": "@dcurylo/azure-servicebus-template",
   "description": "AsyncAPI generator for service bus topologies",
   "version": "0.0.1",
   "generator": {

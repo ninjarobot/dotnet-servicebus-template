@@ -1,4 +1,4 @@
-# dotnet-servicebus-template
+# azure-servicebus-template
 AsyncAPI generator for service bus topologies
 
 ```mermaid
